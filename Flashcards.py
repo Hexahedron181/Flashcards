@@ -1,6 +1,7 @@
 import pickle
 import csv
 import random
+import time
 
 def inpWords(name, wordList):    
     while True:
@@ -17,10 +18,9 @@ def inpWords(name, wordList):
             print("Overwriting last input...")
     if "test" in wordList:
         del wordList["test"]
-    else:
-        file = open(name.lower() + ".txt", "wb")
-        pickle.dump(wordList, file)
-        file.close()
+    file = open(name.lower() + ".txt", "wb")
+    pickle.dump(wordList, file)
+    file.close()
     return
 
 def testWords(name, wordList):
@@ -39,7 +39,7 @@ def testWords(name, wordList):
 def language(name, wordList):
     a = 0
     while a == 0:
-        lan = input("\nWhat language?\n1. Term to Definition\n2. Definition to Term\n= ")
+        lan = input("\n1. Term to Definition\n2. Definition to Term\n3. Back\n= ")
         if lan == "1":
             a = 1
             print("")
@@ -48,14 +48,25 @@ def language(name, wordList):
             a = 1
             print("")
             testE(name, wordList)
+        elif lan == "3":
+            a = 1
+            menu(name, wordList)
         else:
             print("Input invalid...")
+
+def timeConvert(sec):
+  mins = sec // 60
+  sec = sec % 60
+  hours = mins // 60
+  mins = mins % 60
+  print("Time = {0}:{1}:{2}".format(int(hours),int(mins),int(sec)))
             
 def testG(name, wordList):
-    fails = []
     words = []
     for key in wordList.keys():
         words.append(key)
+
+    startTime = time.time()
         
     while len(words) > 0:
         a = random.randint(0, len(words) - 1)
@@ -69,20 +80,10 @@ def testG(name, wordList):
             words.remove(num)
         else:
             print("Incorrect...\nCorrect answer (", wordList[num], ")\n")
-            fails.append(num)
-                    
-    while len(fails) > 0:
-        a = random.randint(0, len(fails) - 1)
-        num = fails[a]
-        print(num, end=" = ")
-        userInp = input()
-        if userInp == "":
-            menu(name, wordList)
-        elif userInp == wordList[num]:
-            print("Corret!\n")
-            fails.remove(num)
-        else:
-            print("Incorrect...\nCorrect answer (", wordList[fails[a]], ")\n")
+
+    endTime = time.time()
+    timeLapsed = endTime - startTime
+    timeConvert(timeLapsed)
 
 def getKey(name, val, wordList):
     for key, value in wordList.items():
@@ -90,11 +91,12 @@ def getKey(name, val, wordList):
             return key
         
 def testE(name, wordList):
-    fails = []
     words = []
     for value in wordList.values():
         words.append(value)
-        
+
+    startTime = time.time()
+    
     while len(words) > 0:
         a = random.randint(0, len(words) - 1)
         num = words[a]
@@ -108,20 +110,10 @@ def testE(name, wordList):
             words.remove(num)
         else:
             print("Incorrect...\nCorrect answer (", ans, ")\n")
-            fails.append(num)
-                    
-    while len(fails) > 0:
-        a = random.randint(0, len(fails) - 1)
-        num = fails[a]
-        print(num, end=" = ")
-        userInp = input()
-        if userInp == "":
-            menu(name, wordList)
-        elif userInp == wordList[num]:
-            print("Corret!\n")
-            fails.remove(num)
-        else:
-            print("Incorrect...\nCorrect answer (", wordList[fails[a]], ")\n")
+
+    endTime = time.time()
+    timeLapsed = endTime - startTime
+    timeConvert(timeLapsed)
 
 def outputList(name, wordList):
     print("")
@@ -164,13 +156,14 @@ def mainMenu():
 
     for i in range(docsLen):
         print(i + 1, ".", docs[0][i])
-    print(i + 2, ". create new set")     
+    print(i + 2, ". Create New Set")     
 
     while inp == 0:
-        userInput = int(input("= "))
-        if userInput > len(docs[0]) + 1:
-            print("Invalid input...")
+        userInput = input("= ")
+        if userInput == "" or int(userInput) > len(docs[0]) + 1 or int(userInput) <= 0:
+            print("Invalid input...")   
         else:
+            userInput = int(userInput)
             inp = 1
 
     if userInput != i + 2:
