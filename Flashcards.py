@@ -13,7 +13,7 @@ def inpWords(name, wordList):
 
         repeat = input("Right? ")
         if repeat == "":
-            wordList[german] = english.capitalize()
+            wordList[german] = english
         else:
             print("Overwriting last input...")
     if "test" in wordList:
@@ -140,42 +140,51 @@ def menu(name, wordList):
 # MAIN CODE ================================================
 
 def mainMenu():
-    
+
+    a = 0
     wordList = {}
-    docs = []
+    docs1 = []
 
-    with open('docNames.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            docs.append(row)
+    while True:
+        try:
+            with open('docNames.csv', 'r') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    docs1.append(row)
+                break
+        except:
+            with open('docNames.csv', 'w') as file:
+                file.close()
 
-    docsLen = len(docs[0])
-    inp = 0
+    
+    if len(docs1) > 0:
+        docsLen = len(docs1)
+        inp = 0
 
-    print("\nWhat set do you want to use?\n")
+        print("\nWhat set do you want to use?\n")
 
-    for i in range(docsLen):
-        print(i + 1, ".", docs[0][i])
-    print(i + 2, ". Create New Set")     
+        for i in range(docsLen):
+            new = str(docs1[i])[2:-2].title()
+            print(i + 1, ".", new)
+        print(i + 2, ". Create New Set")
+        
+    else:
+        print("\nWhat set do you want to use?\n")
+        print("1. Create New Set")
+        i = 0
+        a = 1
+        docsLen = 0
+        inp = 0
 
     while inp == 0:
         userInput = input("= ")
-        if userInput == "" or int(userInput) > len(docs[0]) + 1 or int(userInput) <= 0:
+        if userInput == "" or int(userInput) > len(docs1) + 1 or int(userInput) <= 0:
             print("Invalid input...")   
         else:
             userInput = int(userInput)
             inp = 1
-
-    if userInput != i + 2:
-        document = docs[0][userInput - 1] + ".txt"
-
-        with open(document, 'rb') as handle:
-            data = handle.read()
-
-        wordList = pickle.loads(data)
-        menu(docs[0][userInput - 1].upper(), wordList)
         
-    elif userInput == i + 2:
+    if userInput == i + 2 or a == 1:
             
         dictionary = {"test" : "one"}
         name = input("What would you like to name your set: ")
@@ -184,11 +193,23 @@ def mainMenu():
         fileDoc = open(docName, 'wb')
         pickle.dump(dictionary, fileDoc)
         fileDoc.close()
-        docs[0].append(name)
+        docs1.append(name)
+        
         with open('docNames.csv', 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(docs[0])
+            writer.writerow(docs1)
+            
         mainMenu()
+
+    elif userInput != i + 2:
+        doc = str(docs1[userInput - 1])[2:-2]
+        document = doc + ".txt"
+
+        with open(document, 'rb') as handle:
+            data = handle.read()
+
+        wordList = pickle.loads(data)
+        menu(doc.upper(), wordList)
 
 
 
