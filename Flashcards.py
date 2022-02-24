@@ -147,16 +147,16 @@ def mainMenu():
 
     while True:
         try:
-            with open('docNames.csv', 'r') as file:
-                reader = csv.reader(file)
+            with open('docNames.csv', 'r') as csvfile:
+                reader = csv.reader(csvfile)
                 for row in reader:
-                    docs1.append(row)
+                    docs1 = row
                 break
         except:
             with open('docNames.csv', 'w') as file:
                 file.close()
 
-    
+                
     if len(docs1) > 0:
         docsLen = len(docs1)
         inp = 0
@@ -164,7 +164,7 @@ def mainMenu():
         print("\nWhat set do you want to use?\n")
 
         for i in range(docsLen):
-            new = str(docs1[i])[2:-2].title()
+            new = str(docs1[i]).title()
             print(i + 1, ".", new)
         print(i + 2, ". Create New Set")
         
@@ -202,7 +202,7 @@ def mainMenu():
         mainMenu()
 
     elif userInput != i + 2:
-        doc = str(docs1[userInput - 1])[2:-2]
+        doc = str(docs1[userInput - 1])
         document = doc + ".txt"
 
         with open(document, 'rb') as handle:
