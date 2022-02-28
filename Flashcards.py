@@ -2,7 +2,13 @@ import pickle
 import csv
 import random
 import time
+import os
 
+def getKey(name, val, wordList):
+    for key, value in wordList.items():
+        if val == value:
+            return key
+        
 def inpWords(name, wordList):    
     while True:
         german = input("\nTerm: ")
@@ -10,10 +16,12 @@ def inpWords(name, wordList):
             break
         else:
             english = input("Definition: ")
+            while english == "" or english.title() in wordList.values():
+                english = input("Definition: ")
 
         repeat = input("Right? ")
         if repeat == "":
-            wordList[german] = english
+            wordList[german.title()] = english.title()
         else:
             print("Overwriting last input...")
     if "test" in wordList:
@@ -22,19 +30,6 @@ def inpWords(name, wordList):
     pickle.dump(wordList, file)
     file.close()
     return
-
-def testWords(name, wordList):
-    div = 1
-    a = 0
-    listLen = len(wordList)
-    for i in range(listLen):
-        a += 1
-        if a == 10:
-            div =+ 1
-            
-    num = int(listLen / div)
-    print("\n", num, "words selected.\n")
-    test(num)
 
 def language(name, wordList):
     a = 0
@@ -73,9 +68,9 @@ def testG(name, wordList):
         num = words[a]
         print(num, end=" = ")
         userInp = input()
-        if userInp== "":
+        if userInp == "":
             menu(name, wordList)
-        elif userInp == wordList[num]:
+        elif userInp.title() == wordList[num]:
             print("Corret!\n")
             words.remove(num)
         else:
@@ -84,11 +79,6 @@ def testG(name, wordList):
     endTime = time.time()
     timeLapsed = endTime - startTime
     timeConvert(timeLapsed)
-
-def getKey(name, val, wordList):
-    for key, value in wordList.items():
-        if val == value:
-            return key
         
 def testE(name, wordList):
     words = []
@@ -116,26 +106,133 @@ def testE(name, wordList):
     timeConvert(timeLapsed)
 
 def outputList(name, wordList):
+    keys = []
+    values = []
     print("")
-    for key, value in wordList.items():
-        print(key, "=", value)
+    for key in wordList.keys():
+        keys.append(key)
+    keys.sort()
+    for i in range(0, len(keys)):
+        print(keys[i], "=", wordList[keys[i]])
+    if "test" in wordList.keys() and wordList["test"] == "one":
+        print("This is the default input. It will be removed when another is added.")
+
+def CSV(delName):    
+    with open('docNames.csv', 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            docs1 = row
+    csvfile.close()
+    docs1.remove(delName.lower())
+    with open('docNames.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(docs1)
+    
+def options(name, wordList):
+
+    items = {}
+    K = 1
+    print("\n1. Delete input\n2. Delete entire set")
+    while True:
+        inp = input("= ")
+        if inp == "1":
+            while True:
+                outputList(name, wordList)
+                while True:
+                    print("\nWhat would you like to delete? (input term or definition)")
+                    delInp = input("= ")
+                    if delInp == "":
+                        options(name, wordList)
+                    if len(wordList) == 1:
+                        print("You cannot delete an item if it is the only item in a list.")
+                        menu(name, wordList)
+                    if delInp.title() in wordList.keys():
+                        items[delInp.title()] = wordList[delInp.title()]
+                    if delInp.title() in wordList.values():
+                        K = getKey(name, delInp.title(), wordList)
+                        items[K.title()] = delInp.title()
+                    if len(items) > 1:
+                        print("\nmore than one item had this input...")
+                        outputList(name, items)
+                        print("\nWhich item do you wish to delete? (input term)")
+                        while True:
+                            uInp = input("\n= ")
+                            if uInp.title() in wordList.keys():
+                                wordList.pop(uInp.title())
+                                print("Deletion success...\n")
+                                items = {}
+                                K = 1
+                                break
+                            elif uInp == "":
+                                options(name, wordList)
+                            else:
+                                print("Input invalid...")
+                        break
+                    elif len(items) == 1:
+                        if K == 1:
+                            K = delInp
+                        K = K.title()
+                        print("\nIs this the item you wish to remove?\n\n", K, "=", wordList[K])
+                        inp = input("\n= ")
+                        if inp != "" and inp[0].title() == "Y":
+                            wordList.pop(K)
+                            print("Deletion success...\n")
+                            items = {}
+                            K = 1
+                    elif delInp == "":
+                        options(name, wordList)
+                    else:
+                        print("Input invalid...")
+                        
+            file = open(name.lower() + ".txt", "wb")
+            pickle.dump(wordList, file)
+            file.close()
+            break
+        elif inp == "2":
+            print("Are you sure you want to delete the entire set?\n(You can not undo this action)")
+            uInp = input("\n= ")
+            if uInp == "" or uInp[0].title() != "Y":
+                break
+            elif uInp[0].title() == "Y":
+                os.remove(name.lower() + ".txt")
+                CSV(name.title())
+                mainMenu()
+        elif inp == "3" or inp == "":
+            menu(name, wordList)
+        else:
+            print("Input invalid")
 
 def menu(name, wordList):
     
     while True:
-        print("\n-----", name, "-----\n\n1. Input New Words\n2. Flashcard Test\n3. Print Words\n4. Main Menu", end="\n= ")
+        print("\n-----", name, "-----\n\n1. Input New Words\n2. Flashcard Test\n3. Print Words\n4. Main Menu\n5. Options", end="\n= ")
         activity = input()
         if activity == "1":
             inpWords(name, wordList)
         elif activity == "2":
             language(name, wordList)
         elif activity == "3":
-            outputList(name, wordList)
+            print("\n1. Print entire list\n2. Print the definition of a term")
+            inp = input("= ")
+            if inp == "1":
+                outputList(name, wordList)
+            elif inp == "2":
+                while True:
+                    inpTerm = input("Input Term: ")
+                    if inpTerm.title() in wordList.keys():
+                        print("\n",inpTerm.title(), "=", wordList[inpTerm.title()])
+                        break
+                    elif inpTerm == "":
+                        menu(name, wordList)
+                    else:
+                        print("Input invalid...")
         elif activity == "4":
             mainMenu()
+        elif activity == "5":
+            options(name, wordList)
         else:
             print("Input invalid please try again...\n")
-
+    
 
 # MAIN CODE ================================================
 
@@ -178,7 +275,9 @@ def mainMenu():
 
     while inp == 0:
         userInput = input("= ")
-        if userInput == "" or int(userInput) > len(docs1) + 1 or int(userInput) <= 0:
+        if userInput.isdigit() == False:
+            print("Input invalid...")
+        elif userInput == "" or int(userInput) > len(docs1) + 1 or int(userInput) <= 0:
             print("Invalid input...")   
         else:
             userInput = int(userInput)
@@ -202,7 +301,7 @@ def mainMenu():
         mainMenu()
 
     elif userInput != i + 2:
-        doc = str(docs1[userInput - 1])
+        doc = str(docs1[userInput - 1].title())
         document = doc + ".txt"
 
         with open(document, 'rb') as handle:
